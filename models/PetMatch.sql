@@ -6,7 +6,7 @@ CREATE TABLE roles (
 
 -- Crear la tabla users
 CREATE TABLE users (
-  Id INT PRIMARY KEY NOT NULL,
+  Id INT AUTO_INCREMENT PRIMARY KEY,
   Rol_Id INT NOT NULL DEFAULT 0,
   First_names VARCHAR(255) NOT NULL,
   Last_names VARCHAR(255) NOT NULL,

@@ -4,7 +4,7 @@ import {DB_DATABASE, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD } from "../src/confi
 
 export const pool = mysql.createPool({
 
-    connetionLimit : 10,
+    connectionLimit : 10,
     host : DB_HOST,
     port : DB_PORT,
     user : DB_USER,

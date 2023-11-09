@@ -9,12 +9,15 @@ export const getUser = async (req, res, next) => {
 
 }
 
-export const singInUser = async (req, res, next) => {
+export const signInUser = async (req, res, next) => {
     const { First_names, Last_names, Email, Password, Phone_Number, Rol_Id } = req.body;
 
     // Verifica si se proporcionó un valor para Rol_Id en el cuerpo de la solicitud.
     // Si no se proporciona, se asigna el valor predeterminado de 0.
     const roleValue = Rol_Id !== undefined ? (Rol_Id === 1 ? "Administrador" : "Usuario") : "Usuario";
+
+    // Si no se proporcionó Rol_Id, asignar el valor predeterminado de 0.
+    const roleId = Rol_Id !== undefined ? Rol_Id : 0;
 
     // Obtén el timestamp actual en formato DATETIME.
     const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -26,7 +29,7 @@ export const singInUser = async (req, res, next) => {
     // Realiza la inserción en la base de datos
     if (First_names && Last_names && Email && Password && Phone_Number) {
         const user = await pool.query(`INSERT INTO users (First_names, Last_names, Email, Password, Role, Phone_Number, Created_at, Rol_Id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [First_names, Last_names, Email, encryptedPassword, roleValue, Phone_Number, createdAt, Rol_Id]);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [First_names, Last_names, Email, encryptedPassword, roleValue, Phone_Number, createdAt, roleId]);
 
         if (user.affectedRows == 1) {
             return res.status(201).json({ code: 201, message: "Usuario registrado correctamente." });
@@ -39,21 +42,22 @@ export const singInUser = async (req, res, next) => {
 };
 
 
+
 export const loginUser = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
+        const { Email, Password } = req.body;
+        if (!Email || !Password) {
             return res.status(400).json({ code: 400, message: "Campos incompletos" });
         }
 
         const query = 'SELECT * FROM users WHERE Email = ?';
-        const rows = await pool.query(query, [email]);
+        const rows = await pool.query(query, [Email]);
 
         if (rows.length === 0) {
             return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
         }
 
-        const validPassword = await bcrypt.compare(password, rows[0].Password); 
+        const validPassword = await bcrypt.compare(Password, rows[0].Password); 
         if (!validPassword) {
             return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
         }
