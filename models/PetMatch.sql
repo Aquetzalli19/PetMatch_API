@@ -17,11 +17,10 @@ CREATE TABLE pets (
   id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
   breed VARCHAR(255) NOT NULL,
+  tipe VARCHAR(255) NOT NULL,
   pet_Size VARCHAR(20) NOT NULL,
   age INT,
   description TEXT NOT NULL,
-  care_Requirements TEXT NOT NULL,
-  contact_info VARCHAR(255) NOT NULL,
   owner INT,
   status VARCHAR(255)
 );
@@ -98,15 +97,16 @@ CREATE TABLE tags (
   name_tag VARCHAR(255)
 );
 
-ALTER TABLE posts ADD CONSTRAINT fk_tags FOREIGN KEY (tags) REFERENCES tags(id);
-ALTER TABLE comments_community ADD CONSTRAINT fk_user_comments FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE comments_community ADD CONSTRAINT fk_post_comments FOREIGN KEY (post_id) REFERENCES posts_community(id);
-ALTER TABLE posts_community ADD CONSTRAINT fk_user_posts_community FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE images_profile ADD CONSTRAINT fk_user_images_profile FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE images_posts ADD CONSTRAINT fk_post_images_posts FOREIGN KEY (post_id) REFERENCES posts(id);
-ALTER TABLE preferences ADD CONSTRAINT fk_user_preferences FOREIGN KEY (user_Id) REFERENCES users(id);
-ALTER TABLE pets ADD CONSTRAINT fk_owner_pets FOREIGN KEY (owner) REFERENCES users(id);
-ALTER TABLE posts ADD CONSTRAINT fk_pet_posts FOREIGN KEY (pet) REFERENCES pets(id);
-ALTER TABLE preferences ADD CONSTRAINT fk_weather_preferences FOREIGN KEY (weather) REFERENCES weather_references(code);
-ALTER TABLE matchs ADD CONSTRAINT fk_user_matchs FOREIGN KEY (user) REFERENCES users(id);
-ALTER TABLE matchs ADD CONSTRAINT fk_pet_matchs FOREIGN KEY (pet) REFERENCES pets(id);
+-- Aquí se definen las referencias entre tablas
+ALTER TABLE posts ADD FOREIGN KEY (tags) REFERENCES tags(id);
+ALTER TABLE comments_community ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE comments_community ADD FOREIGN KEY (post_id) REFERENCES posts_community(id);
+ALTER TABLE posts_community ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE images_profile ADD FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE images_posts ADD FOREIGN KEY (post_id) REFERENCES posts(id);
+ALTER TABLE preferences ADD FOREIGN KEY (weather) REFERENCES weather_references(code);
+ALTER TABLE pets ADD FOREIGN KEY (owner) REFERENCES users(id);
+ALTER TABLE posts ADD FOREIGN KEY (pet) REFERENCES pets(id);
+ALTER TABLE preferences ADD FOREIGN KEY (user_Id) REFERENCES users(id);
+ALTER TABLE matchs ADD FOREIGN KEY (user) REFERENCES users(id);
+ALTER TABLE matchs ADD FOREIGN KEY (pet) REFERENCES pets(id);
