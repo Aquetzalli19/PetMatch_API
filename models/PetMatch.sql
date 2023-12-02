@@ -24,7 +24,8 @@ CREATE TABLE users (
 CREATE TABLE pets (
   Id INT PRIMARY KEY NOT NULL,
   Name VARCHAR(255) NOT NULL,
-  Breed VARCHAR(255) NOT NULL,
+  Breed VARCHAR(255),
+  type varchar(255)
   Pet_Size VARCHAR(20) NOT NULL,
   Age INT,
   Description TEXT NOT NULL,
