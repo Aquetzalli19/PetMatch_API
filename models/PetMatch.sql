@@ -1,16 +1,16 @@
 CREATE TABLE users (
-  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  rol ENUM('0', '1') DEFAULT '0',
-  first_names VARCHAR(255) NOT NULL,
-  last_names VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL,
-  addres VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  role VARCHAR(255) NOT NULL,
-  instagram_Link VARCHAR(255),
-  facebook_Link VARCHAR(255),
-  created_at DATETIME,
-  phone_Number VARCHAR(255) NOT NULL
+  Id INT AUTO_INCREMENT PRIMARY KEY,
+  Rol_Id INT NOT NULL DEFAULT 0,
+  First_names VARCHAR(255) NOT NULL,
+  Last_names VARCHAR(255) NOT NULL,
+  Email VARCHAR(255) NOT NULL,
+  Password VARCHAR(255) NOT NULL,
+  Role VARCHAR(255) NOT NULL ,
+  Instagram_Link VARCHAR(255),
+  Facebook_Link VARCHAR(255),
+  Created_at DATETIME,
+  Phone_Number VARCHAR(255) NOT NULL,
+  FOREIGN KEY (Rol_Id) REFERENCES roles(Id)
 );
 
 CREATE TABLE pets (
