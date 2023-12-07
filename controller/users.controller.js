@@ -32,7 +32,7 @@ export const signInUser = async (req, res, next) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [First_names, Last_names, Email, encryptedPassword, roleValue, Phone_Number, createdAt, roleId]);
 
         if (user.affectedRows == 1) {
-            return res.status(201).json({ code: 201, message: "Usuario registrado correctamente." });
+            return res.status(201).json({ code: 201, message: "Usuario registrado correctamente." , Rol_Id: roleId});
         }
 
         return res.status(500).json({ code: 500, message: "Ocurrió un error." });
@@ -41,34 +41,60 @@ export const signInUser = async (req, res, next) => {
     }
 };
 
-
-
 export const loginUser = async (req, res, next) => {
     try {
-        const { Email, Password } = req.body;
-        if (!Email || !Password) {
-            return res.status(400).json({ code: 400, message: "Campos incompletos" });
+      const { Email, Password } = req.body;
+      if (!Email || !Password) {
+        return res.status(400).json({ code: 400, message: "Campos incompletos" });
+      }
+  
+      const query = 'SELECT * FROM users WHERE Email = ?';
+      const rows = await pool.query(query, [Email]);
+  
+      if (rows.length === 0) {
+        return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+      }
+  
+      const validPassword = await bcrypt.compare(Password, rows[0].Password);
+      if (!validPassword) {
+        return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+      }
+  
+      const token = jwt.sign({
+        user_id: rows[0].Id,
+        user_email: rows[0].Email
+      }, "your-secret-key");
+  
+      
+      return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].Id });
+    } catch (error) {
+      return next(error);
+    }
+  };
+  
+
+export const configUser = async (req, res, next) => {
+    try {
+        const { userId, updatedFields } = req.body;
+
+        // Verifica si se proporcionó el ID del usuario y los campos actualizados.
+        if (!userId || !updatedFields) {
+            return res.status(400).json({ code: 400, message: "Parámetros incompletos" });
         }
 
-        const query = 'SELECT * FROM users WHERE Email = ?';
-        const rows = await pool.query(query, [Email]);
+        // Construye la consulta de actualización dinámica.
+        const updateQuery = Object.keys(updatedFields).map(key => `${key} = ?`).join(', ');
 
-        if (rows.length === 0) {
-            return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+        // Ejecuta la consulta de actualización.
+        const result = await pool.query(`UPDATE users SET ${updateQuery} WHERE Id = ?`, [...Object.values(updatedFields), userId]);
+
+        if (result.affectedRows > 0) {
+            return res.status(200).json({ code: 200, message: "Usuario actualizado correctamente." });
+        } else {
+            return res.status(404).json({ code: 404, message: "Usuario no encontrado." });
         }
-
-        const validPassword = await bcrypt.compare(Password, rows[0].Password); 
-        if (!validPassword) {
-            return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
-        }
-
-        const token = jwt.sign({
-            user_id: rows[0].Id, 
-            user_email: rows[0].Email 
-        }, "your-secret-key");
-
-        return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token });
     } catch (error) {
         return next(error);
     }
 };
+

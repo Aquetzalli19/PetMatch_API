@@ -14,15 +14,11 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/user', user)
+app.use(auth);
 app.use(Cuestionario);
-app.use('/user', user);
 app.use(comentarios_comunidad);
 // Aplicar el auth unicamente a logIn
-
-
-
-
-
 app.use(notFound);
 
 app.listen(process.env.PORT || 3000, () => {
