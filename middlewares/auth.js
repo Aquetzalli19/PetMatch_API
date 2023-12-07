@@ -8,6 +8,6 @@ export const auth = (req,res,next) => {
       next();
     }
     catch (error){
-      return res.status(401).json({code: 401, message : "JA! No tienes permisos B)"});
+      return res.status(401).json({code: 401, message : "Te voy a ser franco, lo que se chingo fue el jasguer :("});
     }
 }

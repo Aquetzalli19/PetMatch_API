@@ -15,10 +15,10 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-app.use('/user', user);
-// Aplicar el auth unicamente a logIn
+app.use('/user', user)
 app.use(auth);
+
+
 
 
 
