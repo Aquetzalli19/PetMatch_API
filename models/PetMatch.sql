@@ -5,7 +5,6 @@ CREATE TABLE users (
   first_names VARCHAR(255) NOT NULL,
   last_names VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
-  addres VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL,
   role VARCHAR(255) NOT NULL,
   instagram_Link VARCHAR(255),
