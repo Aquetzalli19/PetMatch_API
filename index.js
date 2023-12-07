@@ -1,12 +1,16 @@
 // Importación de paquetes
 import morgan from 'morgan';  // Middleware para registrar solicitudes HTTP en consola
 import express from 'express'; // Framework de aplicación web para Node.js
-import cors from 'cors';
+import { cors } from './middlewares/cors.js';
+import { notFound } from './middlewares/notFound.js';
 import session from 'express-session'; 
 import path from 'path';      // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
+import user from './routes/users.routes.js'
 import pets from './routes/pets.routes.js'
 import imgPet from './routes/imagesPosts.routes.js';
 import posts from './routes/posts.routes.js';
+import Cuestionario from './routes/preferences.routes.js';
+import comentarios_comunidad from './routes/Coments_Comunity.routes.js';
 
 
 // Inicialización de la aplicación Express
@@ -35,11 +39,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuración de rutas
 app.get('/', index); // Asocia la ruta principal a la función 'index'
+
+// Rutas
+
+app.use('/user', user)
+app.use(auth);
 app.use('/pets', pets);
 app.use('/uploads', imgPet)
 app.use('/posts', posts)
+app.use(Cuestionario);
+app.use(comentarios_comunidad);
+
+
+
+// Aplicar el auth unicamente a logIn
+app.use(notFound);
+
 
 // Inicia el servidor, escuchando en el puerto definido en la variable de entorno o en el puerto 3000 por defecto
 app.listen(process.env.PORT || 3000, () => {
-    console.log('Server is running...'); // Mensaje de confirmación al iniciar el servidor
+
+    console.log('Server is in port 3000')
+
 });
