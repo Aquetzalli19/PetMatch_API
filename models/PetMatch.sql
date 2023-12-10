@@ -25,7 +25,8 @@ CREATE TABLE pets (
   owner INT,
   allergies VARCHAR(255),
   exercise_ability ENUM('Poco', 'Moderado', 'Mucho'),
-  status VARCHAR(255)
+  status VARCHAR(255),
+  report varchar(255) DEFAULT Null
 );
 
 -- Table images_posts

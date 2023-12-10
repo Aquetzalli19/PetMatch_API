@@ -11,7 +11,7 @@ import imgPet from './routes/imagesPosts.routes.js';
 import posts from './routes/posts.routes.js';
 import Cuestionario from './routes/preferences.routes.js';
 import comentarios_comunidad from './routes/Coments_Comunity.routes.js';
-import {auth} from './middlewares/auth.js'
+
 
 // Inicialización de la aplicación Express
 const app = express();
