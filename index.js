@@ -8,6 +8,13 @@ import { cors } from './middlewares/cors.js';
 import { notFound } from './middlewares/notFound.js';
 import Cuestionario from './routes/preferences.routes.js';
 import comentarios_comunidad from './routes/Coments_Comunity.routes.js';
+import session from 'express-session';
+
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: true
+  }));
 
 app.use(cors);
 app.use(morgan('dev'));

@@ -78,7 +78,7 @@ CREATE TABLE preferences (
   exercise_ability ENUM('Poco', 'Moderado', 'Mucho'),
   category ENUM('Perros', 'Gatos', 'Roedores', 'Aves'),
   outdoor_Time ENUM('Si', 'No'),
-  weather ENUM('WS1', 'WS2', 'WS3', 'WS4', 'WS5', 'WS6', 'WS7')
+  weather VARCHAR('WS1', 'WS2', 'WS3', 'WS4', 'WS5', 'WS6', 'WS7')
 );
 
 CREATE TABLE weather_references (
