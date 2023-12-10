@@ -1,6 +1,8 @@
 import { pool } from '../config/database.js';
 
 export const getPets = async (req, res, next) => {
+    
+
     const pet = await pool.query('SELECT * FROM pets');
     return res.status(200).json({code : 1, message : pet });
 }

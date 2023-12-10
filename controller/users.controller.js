@@ -1,6 +1,7 @@
 import { pool } from "../config/database.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
+import session from 'express-session';
 
 export const getUser = async (req, res, next) => {
     const user = await pool.query('SELECT * FROM users');
@@ -66,7 +67,9 @@ export const loginUser = async (req, res, next) => {
       }, "your-secret-key");
   
       
+
       return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].Id });
+      
     } catch (error) {
       return next(error);
     }
