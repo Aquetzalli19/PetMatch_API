@@ -1,7 +1,7 @@
 import { pool } from "../config/database.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
-import session from 'express-session'; 
+import session from 'express-session';
 
 export const getUser = async (req, res, next) => {
     const user = await pool.query('SELECT * FROM users');
@@ -66,6 +66,37 @@ export const loginUser = async (req, res, next) => {
       return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
     }
 
+
+export const loginUser = async (req, res, next) => {
+    try {
+      const { Email, Password } = req.body;
+      if (!Email || !Password) {
+        return res.status(400).json({ code: 400, message: "Campos incompletos" });
+      }
+  
+      const query = 'SELECT * FROM users WHERE Email = ?';
+      const rows = await pool.query(query, [Email]);
+  
+      if (rows.length === 0) {
+        return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+      }
+  
+      const validPassword = await bcrypt.compare(Password, rows[0].Password);
+      if (!validPassword) {
+        return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+      }
+  
+      const token = jwt.sign({
+        user_id: rows[0].Id,
+        user_email: rows[0].Email
+      }, "your-secret-key");
+  
+      
+
+      return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].Id });
+      
+    } catch (error) {
+      return next(error);
     const validPassword = await bcrypt.compare(password, rows[0].password);
     if (!validPassword) {
       return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
@@ -77,6 +108,7 @@ export const loginUser = async (req, res, next) => {
     }, "your-secret-key");
 
     req.session.userid = user_id
+      
     return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].id });
   } catch (error) {
     return next(error);

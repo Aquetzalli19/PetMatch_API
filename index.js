@@ -1,7 +1,7 @@
 // Importación de paquetes
 import morgan from 'morgan';  // Middleware para registrar solicitudes HTTP en consola
 import express from 'express'; // Framework de aplicación web para Node.js
-import cors  from 'cors';
+import cors from 'cors';
 import { notFound } from './middlewares/notFound.js';
 import session from 'express-session'; 
 import path from 'path';      // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
@@ -43,7 +43,7 @@ app.get('/', index); // Asocia la ruta principal a la función 'index'
 // Rutas
 
 app.use('/user', user)
-app.use(auth);
+// app.use(auth);
 app.use('/pets', pets);
 app.use('/uploads', imgPet)
 app.use('/posts', posts)
