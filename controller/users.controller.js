@@ -11,36 +11,61 @@ export const getUser = async (req, res, next) => {
 }
 
 export const signInUser = async (req, res, next) => {
-    const { First_names, Last_names, Email, Password, Phone_Number, Rol_Id } = req.body;
+  const { first_names, last_names, email, password, phone_Number } = req.body;
 
-    // Verifica si se proporcionó un valor para Rol_Id en el cuerpo de la solicitud.
-    // Si no se proporciona, se asigna el valor predeterminado de 0.
-    const roleValue = Rol_Id !== undefined ? (Rol_Id === 1 ? "Administrador" : "Usuario") : "Usuario";
+  // Verifica si se proporcionó un valor para Rol_Id en el cuerpo de la solicitud.
+  // Si no se proporciona, se asigna el valor predeterminado de 0.
+  const rolValue = req.body.rol !== undefined ? req.body.rol : '0';
+  
+  // Asigna el valor correspondiente a role según el valor de rol
+  const roleValue = rolValue === '1' ? "Administrador" : "Usuario";
 
-    // Si no se proporcionó Rol_Id, asignar el valor predeterminado de 0.
-    const roleId = Rol_Id !== undefined ? Rol_Id : 0;
+  // Obtén el timestamp actual en formato DATETIME.
+  const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    // Obtén el timestamp actual en formato DATETIME.
-    const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  // Encripta el password
+  const salt = await bcrypt.genSalt(10);
+  const encryptedPassword = await bcrypt.hash(password, salt);
 
-    // Encripta el password
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(Password, salt);
+  // Realiza la inserción en la base de datos
+  if (first_names && last_names && email && password && phone_Number) {
+      try {
+          const user = await pool.query(`
+              INSERT INTO users (first_names, last_names, email, password, rol, role, phone_Number, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `, [first_names, last_names, email, encryptedPassword, rolValue, roleValue, phone_Number, createdAt]);
 
-    // Realiza la inserción en la base de datos
-    if (First_names && Last_names && Email && Password && Phone_Number) {
-        const user = await pool.query(`INSERT INTO users (First_names, Last_names, Email, Password, Role, Phone_Number, Created_at, Rol_Id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [First_names, Last_names, Email, encryptedPassword, roleValue, Phone_Number, createdAt, roleId]);
+          if (user.affectedRows == 1) {
+              return res.status(201).json({ code: 201, message: "Usuario registrado correctamente.", rol: rolValue });
+          }
 
-        if (user.affectedRows == 1) {
-            return res.status(201).json({ code: 201, message: "Usuario registrado correctamente." , Rol_Id: roleId});
-        }
-
-        return res.status(500).json({ code: 500, message: "Ocurrió un error." });
-    } else {
-        return res.status(400).json({ code: 400, message: "Campos incompletos, por favor completa el formulario." });
-    }
+          return res.status(500).json({ code: 500, message: "Ocurrió un error." });
+      } catch (error) {
+          console.error(error);
+          return res.status(500).json({ code: 500, message: "Ocurrió un error en la base de datos." });
+      }
+  } else {
+      return res.status(400).json({ code: 400, message: "Campos incompletos, por favor completa el formulario." });
+  }
 };
+
+
+
+
+export const loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ code: 400, message: "Campos incompletos" });
+    }
+
+    const query = 'SELECT * FROM users WHERE email = ?';
+    const rows = await pool.query(query, [email]);
+
+    if (rows.length === 0) {
+      return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+    }
+
 
 export const loginUser = async (req, res, next) => {
     try {
@@ -72,8 +97,24 @@ export const loginUser = async (req, res, next) => {
       
     } catch (error) {
       return next(error);
+    const validPassword = await bcrypt.compare(password, rows[0].password);
+    if (!validPassword) {
+      return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
     }
-  };
+
+    const token = jwt.sign({
+      user_id: rows[0].id,
+      user_email: rows[0].email
+    }, "your-secret-key");
+
+    req.session.userid = user_id
+      
+    return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].id });
+  } catch (error) {
+    return next(error);
+  }
+};
+
   
 
 export const configUser = async (req, res, next) => {
