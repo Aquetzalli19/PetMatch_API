@@ -7,24 +7,23 @@ export const getPets = async (req, res, next) => {
     return res.status(200).json({code : 1, message : pet });
 }
 export const postPet = async (req, res, next) => {
-    const { name, breed, type, pet_Size, age, description, owner, allergies, exercise_ability, status } = req.body;
+    const { name, breed, age, description, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, status } = req.body;
 
-    if (name && breed && type && pet_Size && age && description && owner && allergies && exercise_ability && status) {
+    // Obtener el user_id de la sesión
+    const userId = req.session.userid;
+
+    if (name && breed && description && type && pet_Size && outdoor_Time && allergies && exercise_ability && weather && status && userId) {
         try {
             const query = `
-                INSERT INTO pets (name, breed, type, pet_Size, age, description, owner, allergies, exercise_ability, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO pets (name, breed, age, description, owner, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-            const values = [name, breed, type, pet_Size, age, description, owner, allergies, exercise_ability, status];
+            const values = [name, breed, age, description, userId, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, status];
             const rows = await pool.query(query, values);
 
             if (rows.affectedRows === 1) {
-                // Obtenemos el ID de la mascota recién insertada
                 const { insertId } = rows;
-
                 req.session.petId = insertId;
-                
-                // Pasamos el ID a la ruta "posts/" como idPet
                 return res.status(201).json({ code: 201, message: 'Mascota guardada correctamente :)'});
             }
             return res.status(500).json({ code: 500, message: 'Ocurrió un error al guardar la mascota' });
