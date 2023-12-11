@@ -220,3 +220,40 @@ export const getPostsFilteredByPreferences = async (req, res) => {
 };
 
 
+export const getPostsByOwner = async (req, res) => {
+    try {
+        const userId = req.session.userid; // Obtener el ID del usuario de la sesión
+
+        const query = `
+            SELECT 
+                posts.id AS post_id,
+                posts.date AS post_date,
+                pets.*,
+                images_posts.filename AS image_filename
+            FROM 
+                posts
+            INNER JOIN 
+                pets ON posts.pet = pets.id
+            LEFT JOIN 
+                images_posts ON posts.img = images_posts.id
+            WHERE 
+                pets.owner = ?;
+        `;
+        
+        const posts = await pool.query(query, [userId]);
+        
+        // Mapear las rutas de las imágenes a URLs completas
+        const baseUrl = 'http://localhost:3000';
+        const postsWithUrls = posts.map(post => {
+            if (post.image_filename) {
+                post.image_path = `${baseUrl}/images/uploads/imagesPosts/${post.image_filename}`;
+            }
+            return post;
+        });
+
+        return res.status(200).json({ code: 1, message: postsWithUrls });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ code: 500, message: 'Error al obtener los posts del usuario', error: error.message });
+    }
+};
