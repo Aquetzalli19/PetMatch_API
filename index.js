@@ -10,7 +10,9 @@ import pets from './routes/pets.routes.js'
 import imgPet from './routes/imagesPosts.routes.js';
 import posts from './routes/posts.routes.js';
 import Cuestionario from './routes/preferences.routes.js';
+import posts_communidad from './routes/community_posts.routes.js'
 import comentarios_comunidad from './routes/Coments_Comunity.routes.js';
+import imgprofile from './routes/imagesProfile.routes.js';
 
 
 // Inicialización de la aplicación Express
@@ -47,7 +49,9 @@ app.use('/user', user)
 app.use('/pets', pets);
 app.use('/uploads', imgPet)
 app.use('/posts', posts)
+app.use('/imgprofile', imgprofile)
 app.use('/preferences', Cuestionario)
+app.use('/posts_community', posts_communidad)
 app.use('/comments_community', comentarios_comunidad);
 
 
