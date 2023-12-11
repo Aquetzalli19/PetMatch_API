@@ -4,7 +4,8 @@ import express from 'express'; // Framework de aplicación web para Node.js
 import cors from 'cors';
 import { notFound } from './middlewares/notFound.js';
 import session from 'express-session'; 
-import path from 'path';      // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
+import path from 'path';
+import { auth } from './middlewares/auth.js';      // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
 import user from './routes/users.routes.js'
 import pets from './routes/pets.routes.js'
 import imgPet from './routes/imagesPosts.routes.js';
@@ -13,6 +14,7 @@ import Cuestionario from './routes/preferences.routes.js';
 import posts_communidad from './routes/community_posts.routes.js'
 import comentarios_comunidad from './routes/Coments_Comunity.routes.js';
 import imgprofile from './routes/imagesProfile.routes.js';
+
 
 
 // Inicialización de la aplicación Express
@@ -45,7 +47,7 @@ app.get('/', index); // Asocia la ruta principal a la función 'index'
 // Rutas
 
 app.use('/user', user)
-// app.use(auth);
+app.use(auth);
 app.use('/pets', pets);
 app.use('/uploads', imgPet)
 app.use('/posts', posts)

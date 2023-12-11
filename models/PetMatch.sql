@@ -32,7 +32,7 @@ CREATE TABLE images_profile (
   originalname VARCHAR(255) NOT NULL,
   mimetype VARCHAR(255) NOT NULL,
   size INT NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 -- Table posts_community
@@ -41,7 +41,7 @@ CREATE TABLE posts_community (
   user_id INT,
   Comment TEXT,
   Date DATE,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 -- Table comments_community
@@ -51,21 +51,11 @@ CREATE TABLE comments_community (
   user_id INT NOT NULL,
   coment TEXT NOT NULL,
   date DATE NOT NULL,
-  FOREIGN KEY (post_id) REFERENCES posts_community(id),
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (`post_id`) REFERENCES `posts_community` (`id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
--- Table posts
-CREATE TABLE posts (
-  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  date DATE,
-  pet INT,
-  img INT,
-  status INT DEFAULT 0,
-  report VARCHAR(255) DEFAULT NULL, -- Corregido: Cambié "Null" por "NULL"
-  FOREIGN KEY (pet) REFERENCES pets(id),
-  FOREIGN KEY (img) REFERENCES images_posts(id)
-);
+
 
 -- Table pets
 CREATE TABLE pets (
@@ -82,7 +72,19 @@ CREATE TABLE pets (
   exercise_ability ENUM('Poco', 'Moderado', 'Mucho'),
   weather ENUM('Frio', 'Calor', 'Templado', 'Todos los climas'),
   status VARCHAR(255) DEFAULT 'En adopcion',
-  FOREIGN KEY (owner) REFERENCES users(id) -- Corregido: Añadí la restricción FOREIGN KEY correctamente
+  FOREIGN KEY (`owner`) REFERENCES `users` (`id`)
+);
+
+-- Table posts
+CREATE TABLE posts (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  date DATE,
+  pet INT,
+  img INT,
+  status INT DEFAULT 0,
+  report VARCHAR(255) DEFAULT NULL,
+  FOREIGN KEY (`pet`) REFERENCES `pets` (`id`),
+  FOREIGN KEY (`img`) REFERENCES `images_posts` (`id`)
 );
 
 -- Table preferences
@@ -94,15 +96,5 @@ CREATE TABLE preferences (
   category ENUM('Perros', 'Gatos', 'Roedores', 'Aves'),
   outdoor_Time ENUM('Si', 'No'),
   weather ENUM('Frio', 'Calor', 'Templado', 'Todos los climas'),
-  FOREIGN KEY (user_Id) REFERENCES users(id)
+  FOREIGN KEY (`user_Id`) REFERENCES `users` (`id`)
 );
-
--- Referencias
-ALTER TABLE comments_community ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE comments_community ADD FOREIGN KEY (post_id) REFERENCES posts_community(id);
-ALTER TABLE posts_community ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE images_profile ADD FOREIGN KEY (user_id) REFERENCES users(id);
-ALTER TABLE images_posts ADD FOREIGN KEY (id) REFERENCES posts(img);
-ALTER TABLE pets ADD FOREIGN KEY (owner) REFERENCES users(id);
-ALTER TABLE posts ADD FOREIGN KEY (pet) REFERENCES pets(id);
-ALTER TABLE preferences ADD FOREIGN KEY (user_Id) REFERENCES users(id);

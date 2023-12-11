@@ -73,6 +73,8 @@ export const loginUser = async (req, res, next) => {
       // Guardar el ID del usuario en la sesión
       req.session.userid = rows[0].id;
 
+      console.log(req.session.userid);
+
       const token = jwt.sign({
           user_id: rows[0].id,
           user_email: rows[0].email
