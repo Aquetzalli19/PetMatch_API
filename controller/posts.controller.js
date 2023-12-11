@@ -8,25 +8,18 @@ export const getPosts = async (req, res, next) => {
         const baseUrl = 'http://localhost:3000';
 
         const query = `
-            SELECT 
-                posts.id AS post_id,
-                posts.date AS post_date,
-                pets.id AS pet_id,
-                pets.name AS pet_name,
-                pets.breed AS pet_breed,
-                pets.type AS pet_type,
-                pets.pet_Size AS pet_size,
-                pets.age AS pet_age,
-                pets.description AS pet_description,
-                pets.owner AS pet_owner_id,
-                images_posts.filename AS image_filename
-            FROM 
-                posts
-            INNER JOIN 
-                pets ON posts.pet = pets.id
-            LEFT JOIN 
-                images_posts ON posts.img = images_posts.id;
-        `;
+        SELECT 
+        posts.id AS post_id,
+        posts.date AS post_date,
+        pets.*,
+        images_posts.filename AS image_filename
+    FROM 
+        posts
+    INNER JOIN 
+        pets ON posts.pet = pets.id
+    LEFT JOIN 
+        images_posts ON posts.img = images_posts.id;
+`;
         
         const posts = await pool.query(query);
         
@@ -90,24 +83,26 @@ export const deletePost = async (req, res, next) => {
 
 export const reportPost = async (req, res, next) => {
     const postId = req.params.id; // Suponiendo que el ID está en la ruta
+    const reportMessage = req.body.report; // Mensaje del reporte desde la solicitud
 
     try {
         const query = `
             UPDATE posts
-            SET status = 1
+            SET status = 1, report = ?
             WHERE id = ?
         `;
-        const result = await pool.query(query, [postId]);
+        const result = await pool.query(query, [reportMessage, postId]);
 
         if (result.affectedRows === 1) {
-            return res.status(200).json({ code: 200, message: `Estado del post con ID ${postId} actualizado a 1` });
+            return res.status(200).json({ code: 200, message: `Estado del post con ID ${postId} actualizado a 1 y reporte añadido` });
         }
         return res.status(404).json({ code: 404, message: `No se encontró un post con ID ${postId}` });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ code: 500, message: 'Error al actualizar el estado del post', error: error.message });
+        return res.status(500).json({ code: 500, message: 'Error al actualizar el estado del post y añadir reporte', error: error.message });
     }
 };
+
 
 export const updatePostStatus = async (req, res, next) => {
     const postId = req.params.id; // Suponiendo que el ID está en la ruta
@@ -138,14 +133,7 @@ export const getPostsReported = async (req, res, next) => {
             SELECT 
                 posts.id AS post_id,
                 posts.date AS post_date,
-                pets.id AS pet_id,
-                pets.name AS pet_name,
-                pets.breed AS pet_breed,
-                pets.type AS pet_type,
-                pets.pet_Size AS pet_size,
-                pets.age AS pet_age,
-                pets.description AS pet_description,
-                pets.owner AS pet_owner_id,
+                pets.*,
                 images_posts.filename AS image_filename
             FROM 
                 posts
@@ -172,3 +160,100 @@ export const getPostsReported = async (req, res, next) => {
         return res.status(500).json({ code: 500, message: 'Error al obtener los posts', error: error.message });
     }
 }
+
+export const getPostsFilteredByPreferences = async (req, res) => {
+    try {
+        const userId = req.session.userid; // Suponiendo que tienes acceso al ID de usuario en la sesión
+
+        // Obtener las preferencias del usuario desde la base de datos
+        const userPreferences = await pool.query('SELECT * FROM preferences WHERE user_Id = ?', [userId]);
+
+        if (userPreferences.length === 0) {
+            return res.status(404).json({ code: 404, message: 'No se encontraron preferencias para este usuario' });
+        }
+
+        // Mapear el tamaño de la vivienda a los tamaños de mascotas correspondientes
+        const petSizeMapping = {
+            'Pequeno': 'Pequeno',
+            'Mediano': 'Mediano',
+            'Grande': 'Grande'
+        };
+
+        // Obtener el tamaño de mascota correspondiente al tamaño de vivienda del usuario
+        const userPetSize = petSizeMapping[userPreferences[0].housing_Type];
+
+        // Construir la consulta para obtener posts filtrados por las preferencias del usuario
+        const query = `
+            SELECT 
+                posts.id AS post_id,
+                posts.date AS post_date,
+                pets.*,
+                images_posts.filename AS image_filename
+            FROM 
+                posts
+            INNER JOIN 
+                pets ON posts.pet = pets.id
+            LEFT JOIN 
+                images_posts ON posts.img = images_posts.id
+            WHERE 
+                pets.pet_Size = ? AND
+                pets.outdoor_Time = ? AND
+                pets.allergies = ? AND
+                pets.exercise_ability = ? AND
+                pets.weather = ?;
+        `;
+
+        // Obtener los valores de las preferencias del usuario y realizar la consulta filtrada
+        const result = await pool.query(query, [
+            userPetSize,
+            userPreferences[0].outdoor_Time,
+            userPreferences[0].allergies,
+            userPreferences[0].exercise_ability,
+            userPreferences[0].weather
+        ]);
+
+        return res.status(200).json({ code: 200, message: result });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ code: 500, message: 'Error al obtener los posts filtrados por preferencias', error: error.message });
+    }
+};
+
+
+export const getPostsByOwner = async (req, res) => {
+    try {
+        const userId = req.session.userid; // Obtener el ID del usuario de la sesión
+
+        const query = `
+            SELECT 
+                posts.id AS post_id,
+                posts.date AS post_date,
+                pets.*,
+                images_posts.filename AS image_filename
+            FROM 
+                posts
+            INNER JOIN 
+                pets ON posts.pet = pets.id
+            LEFT JOIN 
+                images_posts ON posts.img = images_posts.id
+            WHERE 
+                pets.owner = ?;
+        `;
+        
+        const posts = await pool.query(query, [userId]);
+        
+        // Mapear las rutas de las imágenes a URLs completas
+        const baseUrl = 'http://localhost:3000';
+        const postsWithUrls = posts.map(post => {
+            if (post.image_filename) {
+                post.image_path = `${baseUrl}/images/uploads/imagesPosts/${post.image_filename}`;
+            }
+            return post;
+        });
+
+        return res.status(200).json({ code: 1, message: postsWithUrls });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ code: 500, message: 'Error al obtener los posts del usuario', error: error.message });
+    }
+};

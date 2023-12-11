@@ -1,6 +1,7 @@
 import { pool } from "../config/database.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
+import session from 'express-session';
 
 export const getUser = async (req, res, next) => {
     const user = await pool.query('SELECT * FROM users');
@@ -50,7 +51,6 @@ export const signInUser = async (req, res, next) => {
 
 
 
-
 export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -77,34 +77,56 @@ export const loginUser = async (req, res, next) => {
 
     return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].id });
   } catch (error) {
-    return next(error);
+      return next(error);
   }
 };
 
-  
-
 export const configUser = async (req, res, next) => {
-    try {
-        const { userId, updatedFields } = req.body;
+  try {
+      const { userId, updatedFields } = req.body;
 
-        // Verifica si se proporcionó el ID del usuario y los campos actualizados.
-        if (!userId || !updatedFields) {
-            return res.status(400).json({ code: 400, message: "Parámetros incompletos" });
-        }
+      // Verifica si se proporcionó el ID del usuario y los campos actualizados.
+      if (!userId || !updatedFields) {
+          return res.status(400).json({ code: 400, message: "Parámetros incompletos" });
+      }
 
-        // Construye la consulta de actualización dinámica.
-        const updateQuery = Object.keys(updatedFields).map(key => `${key} = ?`).join(', ');
+      // Construye la consulta de actualización dinámica.
+      const updateQuery = Object.keys(updatedFields).map(key => `${key} = ?`).join(', ');
 
-        // Ejecuta la consulta de actualización.
-        const result = await pool.query(`UPDATE users SET ${updateQuery} WHERE Id = ?`, [...Object.values(updatedFields), userId]);
+      // Ejecuta la consulta de actualización.
+      const result = await pool.query(`UPDATE users SET ${updateQuery} WHERE id = ?`, [...Object.values(updatedFields), userId]);
 
-        if (result.affectedRows > 0) {
-            return res.status(200).json({ code: 200, message: "Usuario actualizado correctamente." });
-        } else {
-            return res.status(404).json({ code: 404, message: "Usuario no encontrado." });
-        }
-    } catch (error) {
-        return next(error);
-    }
+      if (result.affectedRows > 0) {
+          return res.status(200).json({ code: 200, message: "Usuario actualizado correctamente." });
+      } else {
+          return res.status(404).json({ code: 404, message: "Usuario no encontrado." });
+      }
+  } catch (error) {
+      return next(error);
+  }
 };
 
+export const logout = async (req, res, next) => {
+  try {
+      // Elimina la cookie de sesión
+      req.session.destroy((err) => {
+          if (err) {
+              console.error('Error al destruir la sesión:', err);
+              return res.status(500).json({ code: 500, message: 'Error al cerrar sesión' });
+          }
+
+          // Elimina el token si se encuentra en las cabeceras de la solicitud
+          if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+              // Extrae el token de las cabeceras
+              const token = req.headers.authorization.split(' ')[1];
+              // Lógica para invalidar o eliminar el token en tu sistema (si es necesario)
+              // Puede ser revocándolo o eliminándolo de la base de datos o caché de tokens activos
+          }
+
+          return res.status(200).json({ code: 200, message: 'Sesión cerrada correctamente' });
+      });
+  } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      return res.status(500).json({ code: 500, message: 'Error al cerrar sesión', error: error.message });
+  }
+};

@@ -1,7 +1,7 @@
 // Importación de paquetes
 import morgan from 'morgan';  // Middleware para registrar solicitudes HTTP en consola
 import express from 'express'; // Framework de aplicación web para Node.js
-import cors  from 'cors';
+import cors from 'cors';
 import { notFound } from './middlewares/notFound.js';
 import session from 'express-session'; 
 import path from 'path';      // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
@@ -10,8 +10,10 @@ import pets from './routes/pets.routes.js'
 import imgPet from './routes/imagesPosts.routes.js';
 import posts from './routes/posts.routes.js';
 import Cuestionario from './routes/preferences.routes.js';
+import posts_communidad from './routes/community_posts.routes.js'
 import comentarios_comunidad from './routes/Coments_Comunity.routes.js';
-import {auth} from './middlewares/auth.js'
+import imgprofile from './routes/imagesProfile.routes.js';
+
 
 // Inicialización de la aplicación Express
 const app = express();
@@ -43,13 +45,14 @@ app.get('/', index); // Asocia la ruta principal a la función 'index'
 // Rutas
 
 app.use('/user', user)
-app.use(auth);
+// app.use(auth);
 app.use('/pets', pets);
 app.use('/uploads', imgPet)
 app.use('/posts', posts)
-app.use(Cuestionario);
-app.use(comentarios_comunidad);
-
+app.use('/imgprofile', imgprofile)
+app.use('/preferences', Cuestionario)
+app.use('/posts_community', posts_communidad)
+app.use('/comments_community', comentarios_comunidad);
 
 
 // Aplicar el auth unicamente a logIn

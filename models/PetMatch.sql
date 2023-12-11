@@ -13,21 +13,6 @@ CREATE TABLE users (
   phone_Number VARCHAR(255) NOT NULL
 );
 
--- Table pets
-CREATE TABLE pets (
-  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  breed VARCHAR(255) NOT NULL,
-  type VARCHAR(255) NOT NULL,
-  pet_Size VARCHAR(20) NOT NULL,
-  age INT,
-  description TEXT NOT NULL,
-  owner INT,
-  allergies VARCHAR(255),
-  exercise_ability ENUM('Poco', 'Moderado', 'Mucho'),
-  status VARCHAR(255)
-);
-
 -- Table images_posts
 CREATE TABLE images_posts (
   id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -46,7 +31,8 @@ CREATE TABLE images_profile (
   path VARCHAR(255) NOT NULL,
   originalname VARCHAR(255) NOT NULL,
   mimetype VARCHAR(255) NOT NULL,
-  size INT NOT NULL
+  size INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Table posts_community
@@ -54,7 +40,8 @@ CREATE TABLE posts_community (
   id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   user_id INT,
   Comment TEXT,
-  Date DATE
+  Date DATE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Table comments_community
@@ -63,7 +50,9 @@ CREATE TABLE comments_community (
   post_id INT NOT NULL,
   user_id INT NOT NULL,
   coment TEXT NOT NULL,
-  date DATE NOT NULL
+  date DATE NOT NULL,
+  FOREIGN KEY (post_id) REFERENCES posts_community(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Table posts
@@ -72,18 +61,40 @@ CREATE TABLE posts (
   date DATE,
   pet INT,
   img INT,
-  status INT DEFAULT 0
+  status INT DEFAULT 0,
+  report VARCHAR(255) DEFAULT NULL, -- Corregido: Cambié "Null" por "NULL"
+  FOREIGN KEY (pet) REFERENCES pets(id),
+  FOREIGN KEY (img) REFERENCES images_posts(id)
+);
+
+-- Table pets
+CREATE TABLE pets (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  breed VARCHAR(255) NOT NULL,
+  age INT,
+  description TEXT NOT NULL,
+  owner INT,
+  type ENUM('Perros', 'Gatos', 'Roedores', 'Aves'),
+  pet_Size ENUM('Pequeno','Mediano','Grande'),
+  outdoor_Time ENUM('Si', 'No'),
+  allergies  ENUM('Yes', 'No'),
+  exercise_ability ENUM('Poco', 'Moderado', 'Mucho'),
+  weather ENUM('Frio', 'Calor', 'Templado', 'Todos los climas'),
+  status VARCHAR(255) DEFAULT 'En adopcion',
+  FOREIGN KEY (owner) REFERENCES users(id) -- Corregido: Añadí la restricción FOREIGN KEY correctamente
 );
 
 -- Table preferences
 CREATE TABLE preferences (
-  user_Id INT,
+  user_Id INT PRIMARY KEY,
   housing_Type ENUM('Pequeno','Mediano','Grande'),
   allergies ENUM('Yes', 'No'),
   exercise_ability ENUM('Poco', 'Moderado', 'Mucho'),
   category ENUM('Perros', 'Gatos', 'Roedores', 'Aves'),
   outdoor_Time ENUM('Si', 'No'),
-  weather ENUM('Frio', 'Calor', 'Templado', 'Todos los climas')
+  weather ENUM('Frio', 'Calor', 'Templado', 'Todos los climas'),
+  FOREIGN KEY (user_Id) REFERENCES users(id)
 );
 
 -- Referencias
