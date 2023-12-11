@@ -1,25 +1,22 @@
 import { pool } from '../config/database.js';
 export const postComents = async (req, res) => {
-    try{
-  
-    const {id,post_id,user_id,coment,date} = req.body;
+    try {
+        const { id, post_id, user_id, coment } = req.body;
 
-    const sql = 'Insert into comments_community (Id, Post_id, User_id, Coment, Date) values (?,?,?,?,current_date())';
+        const sql = 'INSERT INTO comments_community (Id, Post_id, User_id, Coment, Date) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)';
 
-    // Datos a insertar
-    const values = [id, post_id, user_id, coment, date];
+        // Datos a insertar
+        const values = [id, post_id, user_id, coment];
 
-    await pool.query(sql, values);
-    console.log('Datos insertados al fin ');
-    res.status(200).json({ message: 'Datos insertados correctamente' });
-    }
-    catch (error) {
+        await pool.query(sql, values);
+        console.log('Datos insertados correctamente');
+        res.status(200).json({ message: 'Datos insertados correctamente' });
+    } catch (error) {
         console.error('Error al insertar datos en la base de datos:', error);
-        res.status(500).json({ error: 'No funciona la conexion papu' });
-      }
-
-
+        res.status(500).json({ error: 'Error en la conexión' });
+    }
 };
+
 
 export const getPostComments = async (req, res) => {
   try {
