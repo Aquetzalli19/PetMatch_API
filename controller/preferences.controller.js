@@ -2,46 +2,76 @@ import { pool } from '../config/database.js';
 import session from 'express-session';
 import user from '../routes/users.routes.js';
 
-export const postData = async (req, res) => {
+// Controlador para la creación de preferencias
+export const createPreferences = async (req, res) => {
   try {
-    const { User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather } = req.body;
+    // Obtener el user_id de la sesión
+    const userId = req.session.userid;
 
-    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [User_Id]);
+    if (!userId) {
+      return res.status(401).json({ code: 401, message: "Usuario no autenticado" });
+    }
+
+    const { Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather } = req.body;
+
+    // Verificar si ya existen preferencias para este usuario
+    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [userId]);
 
     if (existingPreferences.length > 0) {
-      const updateSql = `
-        UPDATE preferences
-        SET Housing_Type = ?, Allergies = ?, Exercise_ability = ?, Category = ?, Outdoor_Time = ?, Weather = ?
-        WHERE User_Id = ?
-      `;
-      const updateValues = [Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather, User_Id];
+      return res.status(400).json({ message: 'El usuario ya tiene preferencias registradas' });
+    }
 
-      const result = await pool.query(updateSql, updateValues);
+    // Realizar la inserción de preferencias utilizando userId
+    const insertSql = 'INSERT INTO preferences (User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const insertValues = [userId, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather];
 
-      if (result.affectedRows === 1) {
-        console.log('Datos actualizados correctamente');
-        req.session.preferences = { User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather };
-        res.status(200).json({ message: 'Datos actualizados correctamente' });
-      } else {
-        console.log('No se pudo actualizar el registro');
-        res.status(500).json({ error: 'No se pudo actualizar el registro' });
-      }
-    } else {
-      const insertSql = 'INSERT INTO preferences (User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather) VALUES (?, ?, ?, ?, ?, ?, ?)';
-      const insertValues = [User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather];
+    const result = await pool.query(insertSql, insertValues);
 
-      const result = await pool.query(insertSql, insertValues);
-
-      if (result.affectedRows === 1) {
-        const user_id = result.insertId;
-        req.session.preferences = { User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather };
-        req.session.user_id = user_id;
-
-        return res.status(200).json({ code: 200, message: 'datos guardados' });
-      }
+    if (result.affectedRows === 1) {
+      return res.status(201).json({ code: 201, message: 'Preferencias registradas correctamente' });
     }
   } catch (error) {
     console.error('Error al interactuar con la base de datos:', error);
     res.status(500).json({ error: 'Error en la conexión con la base de datos' });
+  }
+};
+
+// Controlador para la actualización de preferencias
+export const updatePreferences = async (req, res) => {
+  try {
+    // Obtener el user_id de la sesión
+    const userId = req.session.userid;
+
+    if (!userId) {
+      return res.status(401).json({ code: 401, message: "Usuario no autenticado" });
+    }
+
+    const { Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather } = req.body;
+
+    // Verificar si existen preferencias para este usuario
+    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [userId]);
+
+    if (existingPreferences.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron preferencias para el usuario' });
+    }
+
+    // Realizar la actualización de preferencias utilizando userId
+    const updateSql = `
+      UPDATE preferences
+      SET Housing_Type = ?, Allergies = ?, Exercise_ability = ?, Category = ?, Outdoor_Time = ?, Weather = ?
+      WHERE User_Id = ?
+    `;
+    const updateValues = [Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather, userId];
+
+    const result = await pool.query(updateSql, updateValues);
+
+    if (result.affectedRows === 1) {
+      return res.status(200).json({ code: 200, message: 'Preferencias actualizadas correctamente' });
+    } else {
+      return res.status(500).json({ error: 'No se pudo actualizar las preferencias' });
+    }
+  } catch (error) {
+    console.error('Error al interactuar con la base de datos:', error);
+    return res.status(500).json({ error: 'Error en la conexión con la base de datos' });
   }
 };

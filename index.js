@@ -47,9 +47,8 @@ app.use('/user', user)
 app.use('/pets', pets);
 app.use('/uploads', imgPet)
 app.use('/posts', posts)
-app.use(Cuestionario);
-app.use(comentarios_comunidad);
-
+app.use('/preferences', Cuestionario)
+app.use('/comments_community', comentarios_comunidad);
 
 
 // Aplicar el auth unicamente a logIn
