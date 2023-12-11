@@ -53,33 +53,37 @@ export const signInUser = async (req, res, next) => {
 
 export const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ code: 400, message: "Campos incompletos" });
-    }
+      const { email, password } = req.body;
+      if (!email || !password) {
+          return res.status(400).json({ code: 400, message: "Campos incompletos" });
+      }
 
-    const query = 'SELECT * FROM users WHERE email = ?';
-    const rows = await pool.query(query, [email]);
+      const query = 'SELECT * FROM users WHERE email = ?';
+      const rows = await pool.query(query, [email]);
 
-    if (rows.length === 0) {
-      return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
-    }
+      if (rows.length === 0) {
+          return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+      }
 
-    const validPassword = await bcrypt.compare(password, rows[0].password);
-    if (!validPassword) {
-      return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
-    }
+      const validPassword = await bcrypt.compare(password, rows[0].password);
+      if (!validPassword) {
+          return res.status(401).json({ code: 401, message: "Usuario y/o contraseña incorrectos" });
+      }
 
-    const token = jwt.sign({
-      user_id: rows[0].id,
-      user_email: rows[0].email
-    }, "your-secret-key");
+      // Guardar el ID del usuario en la sesión
+      req.session.userid = rows[0].id;
 
-    return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].id });
+      const token = jwt.sign({
+          user_id: rows[0].id,
+          user_email: rows[0].email
+      }, "your-secret-key");
+
+      return res.status(200).json({ code: 200, message: "Inicio de sesión exitoso", token, user_id: rows[0].id });
   } catch (error) {
       return next(error);
   }
 };
+
 
 export const configUser = async (req, res, next) => {
   try {
