@@ -13,6 +13,9 @@ const __dirname = dirname(__filename);
 
 // Configuración de almacenamiento para Multer
 const storage = multer.diskStorage({
+  limits: {
+    fileSize: 100 * 1024 * 1024, // Tamaño máximo del archivo en bytes
+  },
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../public/images/uploads/imagesPosts'));
   },

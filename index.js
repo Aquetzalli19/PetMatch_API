@@ -5,7 +5,8 @@ import cors from 'cors';
 import { notFound } from './middlewares/notFound.js';
 import session from 'express-session'; 
 import path from 'path';
-import { auth } from './middlewares/auth.js';      // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
+import { auth } from './middlewares/auth.js'; 
+import bodyParser from'body-parser'    // Middleware para configurar CORS (Cross-Origin Resource Sharing)   
 import user from './routes/users.routes.js'
 import pets from './routes/pets.routes.js'
 import imgPet from './routes/imagesPosts.routes.js';
@@ -22,16 +23,25 @@ const app = express();
 
 
 // Middlewares utilizados en la aplicación
-app.use(cors()); // Habilita CORS para permitir solicitudes desde distintos orígenes
+app.use(cors({
+  origin: true,
+  credentials: true
+})); // Habilita CORS para permitir solicitudes desde distintos orígenes
 app.use(morgan('dev')); // Registra las solicitudes HTTP en la consola
-app.use(express.json()); // Middleware para manejar solicitudes con datos en formato JSON
-app.use(express.urlencoded({ extended: true })); // Middleware para manejar solicitudes con datos de formulario
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true })); // Middleware para manejar solicitudes con datos de formulario
 
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
     saveUninitialized: true
   }));
+
+  
+
+  
+  
+  
 
 // Importa el middleware 'index' desde el archivo correspondiente para manejar la ruta principal
 import { index } from './middlewares/index.js';

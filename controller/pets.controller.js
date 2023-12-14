@@ -7,18 +7,15 @@ export const getPets = async (req, res, next) => {
     return res.status(200).json({code : 1, message : pet });
 }
 export const postPet = async (req, res, next) => {
-    const { name, breed, age, description, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, status } = req.body;
+    const { name, breed, age, description, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, owner } = req.body;
 
-    // Obtener el user_id de la sesión
-    const userId = req.session.userid;
-
-    if (name && breed && description && type && pet_Size && outdoor_Time && allergies && exercise_ability && weather && status && userId) {
+    if (name && breed && description && type && pet_Size && outdoor_Time && allergies && exercise_ability && weather && owner) {
         try {
             const query = `
-                INSERT INTO pets (name, breed, age, description, owner, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO pets (name, breed, age, description, owner, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-            const values = [name, breed, age, description, userId, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather, status];
+            const values = [name, breed, age, description, owner, type, pet_Size, outdoor_Time, allergies, exercise_ability, weather];
             const rows = await pool.query(query, values);
 
             if (rows.affectedRows === 1) {

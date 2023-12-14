@@ -39,6 +39,9 @@ export const getPosts = async (req, res, next) => {
 };
 
 export const uploadPost = async (req, res, next) => {
+
+    console.log(req.session);
+
     const imageId = req.session.imageId;
     const petId = req.session.petId;
 
@@ -163,14 +166,17 @@ export const getPostsReported = async (req, res, next) => {
 
 export const getPostsFilteredByPreferences = async (req, res) => {
     try {
-        const userId = req.session.userid; // Suponiendo que tienes acceso al ID de usuario en la sesión
+        const userId = req.headers['userid']; // Accediendo al ID de usuario desde los encabezados
+        console.log(userId); // Verificar si el ID de usuario se está recibiendo correctamente
+
+        if (!userId) {
+            return res.status(400).json({ code: 400, message: 'Falta el ID de usuario en los encabezados' });
+        }
 
         // Obtener las preferencias del usuario desde la base de datos
         const userPreferences = await pool.query('SELECT * FROM preferences WHERE user_Id = ?', [userId]);
 
-        if (userPreferences.length === 0) {
-            return res.status(404).json({ code: 404, message: 'No se encontraron preferencias para este usuario' });
-        }
+        console.log(userPreferences);
 
         // Mapear el tamaño de la vivienda a los tamaños de mascotas correspondientes
         const petSizeMapping = {
@@ -181,6 +187,7 @@ export const getPostsFilteredByPreferences = async (req, res) => {
 
         // Obtener el tamaño de mascota correspondiente al tamaño de vivienda del usuario
         const userPetSize = petSizeMapping[userPreferences[0].housing_Type];
+
 
         // Construir la consulta para obtener posts filtrados por las preferencias del usuario
         const query = `
@@ -195,7 +202,8 @@ export const getPostsFilteredByPreferences = async (req, res) => {
                 pets ON posts.pet = pets.id
             LEFT JOIN 
                 images_posts ON posts.img = images_posts.id
-            WHERE 
+            WHERE
+                pets.type = ? OR 
                 pets.pet_Size = ? AND
                 pets.outdoor_Time = ? AND
                 pets.allergies = ? AND
@@ -212,12 +220,17 @@ export const getPostsFilteredByPreferences = async (req, res) => {
             userPreferences[0].weather
         ]);
 
+        console.log(result);
+
         return res.status(200).json({ code: 200, message: result });
+
+        
     } catch (error) {
         console.error(error);
         return res.status(500).json({ code: 500, message: 'Error al obtener los posts filtrados por preferencias', error: error.message });
     }
 };
+
 
 
 export const getPostsByOwner = async (req, res) => {

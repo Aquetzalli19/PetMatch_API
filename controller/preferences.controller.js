@@ -3,27 +3,31 @@ import session from 'express-session';
 import user from '../routes/users.routes.js';
 
 // Controlador para la creación de preferencias
-export const createPreferences = async (req, res) => {
+// Controlador para la creación de preferencias
+// Controlador para la creación de preferencias
+export const createPreferences = async (req, res, next) => {
   try {
-    // Obtener el user_id de la sesión
-    const userId = req.session.userid;
+    const { User_id } = req.body; // Recibiendo el ID del usuario desde el cuerpo de la solicitud
 
-    if (!userId) {
+    console.log(User_id);
+
+    if (!User_id) {
       return res.status(401).json({ code: 401, message: "Usuario no autenticado" });
     }
 
     const { Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather } = req.body;
 
     // Verificar si ya existen preferencias para este usuario
-    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [userId]);
+    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [User_id]);
 
     if (existingPreferences.length > 0) {
-      return res.status(400).json({ message: 'El usuario ya tiene preferencias registradas' });
+      // Si existen preferencias para este usuario, pasa la solicitud al siguiente middleware/ruta
+      return updatePreferences(req, res);
     }
 
-    // Realizar la inserción de preferencias utilizando userId
+    // Si no existen preferencias para este usuario, procede con la inserción
     const insertSql = 'INSERT INTO preferences (User_Id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    const insertValues = [userId, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather];
+    const insertValues = [User_id, Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather];
 
     const result = await pool.query(insertSql, insertValues);
 
@@ -36,20 +40,23 @@ export const createPreferences = async (req, res) => {
   }
 };
 
+
+
 // Controlador para la actualización de preferencias
 export const updatePreferences = async (req, res) => {
   try {
-    // Obtener el user_id de la sesión
-    const userId = req.session.userid;
+    const { User_id } = req.body; // Recibiendo el ID del usuario desde el cuerpo de la solicitud
 
-    if (!userId) {
+    console.log(User_id);
+
+    if (!User_id) {
       return res.status(401).json({ code: 401, message: "Usuario no autenticado" });
     }
 
     const { Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather } = req.body;
 
     // Verificar si existen preferencias para este usuario
-    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [userId]);
+    const existingPreferences = await pool.query('SELECT * FROM preferences WHERE User_Id = ?', [User_id]);
 
     if (existingPreferences.length === 0) {
       return res.status(404).json({ message: 'No se encontraron preferencias para el usuario' });
@@ -61,7 +68,7 @@ export const updatePreferences = async (req, res) => {
       SET Housing_Type = ?, Allergies = ?, Exercise_ability = ?, Category = ?, Outdoor_Time = ?, Weather = ?
       WHERE User_Id = ?
     `;
-    const updateValues = [Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather, userId];
+    const updateValues = [Housing_Type, Allergies, Exercise_ability, Category, Outdoor_Time, Weather, User_id];
 
     const result = await pool.query(updateSql, updateValues);
 
